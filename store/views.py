@@ -6,9 +6,16 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Category, Product, Cart, CartItem, Order
 from .serializers import CategorySerializer, ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, \
-    UserRegistrationSerializer
+    UserRegistrationSerializer,UserSerializer
 
 from rest_framework.filters import OrderingFilter
+from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
+from rest_framework.decorators import action
+from drf_yasg.utils import swagger_auto_schema
+
+
 
 
 
@@ -22,10 +29,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
-    search_fields = ['name', 'category']
+    search_fields = ['name', 'category__name']
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ['name', 'price']
-    ordering_fields = ['price']
+    ordering_fields = ['price','created_at']
     ordering = ['price']
 
 
@@ -134,3 +141,44 @@ class UserRegistrationViewSet(viewsets.GenericViewSet, viewsets.mixins.CreateMod
             serializer.save()
             return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserViewSet(ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        user = request.user
+        serializer = UserRegistrationSerializer(user)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        method='patch',
+        request_body=UserSerializer,
+        responses={200: UserSerializer, 400: "Invalid data"},
+        operation_description="Update the authenticated user's information.",
+    )
+    @action(detail=False, methods=['patch'], url_path='update')
+    def update_me(self, request):
+        user = request.user
+        serializer = UserSerializer(user,data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+
+    @action(detail=False, methods=['delete'], url_path='')
+    def delete_me(self,request):
+        user = request.user
+        user.delete()
+        return Response(status=204)
+
+
+
+
+
+
+
+
+
+
+

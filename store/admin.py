@@ -12,10 +12,10 @@ class CategoryAdmin(admin.ModelAdmin):
 # Регистрация модели Product
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'price')  # Отображаемые поля
+    list_display = ('id', 'name', 'category', 'price','created_at')  # Отображаемые поля
     list_filter = ('category',)  # Фильтр по категории
     search_fields = ('name',)  # Поле для поиска
-    ordering = ('category', 'name')  # Сортировка
+    ordering = ('category', 'name','created_at')  # Сортировка
 
 
 # Регистрация модели CartItem (позиция корзины)

@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'category', 'category_id']
+        fields = ['id', 'name', 'price', 'category', 'category_id','created_at']
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
@@ -59,10 +59,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validators=[validate_password]
     )
     password2 = serializers.CharField(write_only=True, required=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'password2')
+        fields = ('username', 'email', 'password', 'password2','first_name','last_name')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -77,3 +80,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email','first_name','last_name')
+        read_only_fields = ('username',)
